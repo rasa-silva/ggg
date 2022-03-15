@@ -197,41 +197,17 @@ func OpenNote(c *cli.Context) error {
 	}
 
 	filter := c.Args().First()
+	var note *Note
 	if strings.HasPrefix(filter, "#") {
 		id, err := strconv.Atoi(filter[1:])
 		if err != nil {
 			return ExitWithError(err, "Invalid Id")
 		}
 
-		note, err := FindNoteById(id)
+		note, err = FindNoteById(id)
 		if err != nil {
 			return ExitWithError(err, "Could not find note")
 		}
-
-		filename, err := OpenTempFileInEditor(note.body)
-		if err != nil {
-			return ExitWithError(err, "Could not open file")
-		}
-
-		contents, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return ExitWithError(err, "Could not read file contents")
-		}
-
-		if note.body == string(contents) {
-			fmt.Println("No changes.")
-			return nil
-		}
-
-		note.body = string(contents)
-		note.title = TitleFromBody(note.body)
-		note.modified = time.Now().UTC().Format(time.RFC3339)
-		err = UpdateNote(note)
-		if err != nil {
-			return ExitWithError(err, "Could not update note")
-		}
-
-		fmt.Printf("'%v' updated!\n", note.title)
 
 	} else {
 		notes, _ := FindNotesBySubstring(filter)
@@ -239,10 +215,33 @@ func OpenNote(c *cli.Context) error {
 			fmt.Printf("Ambiguous note title: %v matching notes.\n", len(notes))
 		}
 
-		fmt.Println("TODO Open note...")
+		note = &notes[0]
+	}
+
+	filename, err := OpenTempFileInEditor(note.body)
+	if err != nil {
+		return ExitWithError(err, "Could not open file")
+	}
+
+	contents, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return ExitWithError(err, "Could not read file contents")
+	}
+
+	if note.body == string(contents) {
+		fmt.Println("No changes.")
 		return nil
 	}
 
+	note.body = string(contents)
+	note.title = TitleFromBody(note.body)
+	note.modified = time.Now().UTC().Format(time.RFC3339)
+	err = UpdateNote(note)
+	if err != nil {
+		return ExitWithError(err, "Could not update note")
+	}
+
+	fmt.Printf("'%v' updated!\n", note.title)
 	return nil
 }
 

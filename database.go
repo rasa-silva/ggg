@@ -89,7 +89,7 @@ func FindNoteById(id int) (*Note, error) {
 
 func FindNotesBySubstring(substring string) ([]Note, error) {
 	LogOnVerbose(fmt.Sprint("Finding notes with substring ", substring, "..."))
-	results, err := db.Query("SELECT rowid, title, created, modified FROM Notes WHERE title MATCH ?", substring)
+	results, err := db.Query("SELECT rowid, title, body, created, modified FROM Notes WHERE title MATCH ?", substring)
 	if err != nil {
 		return nil, err
 	}
@@ -97,12 +97,12 @@ func FindNotesBySubstring(substring string) ([]Note, error) {
 	notes := make([]Note, 0, 10)
 	for results.Next() {
 		var rowid int
-		var title, created, modified string
-		if err = results.Scan(&rowid, &title, &created, &modified); err != nil {
+		var title, body, created, modified string
+		if err = results.Scan(&rowid, &title, &body, &created, &modified); err != nil {
 			return nil, err
 		}
 
-		notes = append(notes, Note{id: rowid, title: title, created: created, modified: modified})
+		notes = append(notes, Note{id: rowid, title: title, body: body, created: created, modified: modified})
 	}
 
 	return notes, nil
