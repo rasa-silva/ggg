@@ -18,6 +18,7 @@ var (
 	errorPrefix   = text.FgHiRed.Sprint("ERROR:")
 )
 
+// GetDBPath returns the full path to the database file
 func GetDBPath() (string, error) {
 	hd, err := os.UserHomeDir()
 	if err != nil {
@@ -29,6 +30,7 @@ func GetDBPath() (string, error) {
 	return dbPath, nil
 }
 
+// InitDB creates and initializes a new database
 func InitDB(c *cli.Context) error {
 	path, err := GetDBPath()
 	if err != nil {
